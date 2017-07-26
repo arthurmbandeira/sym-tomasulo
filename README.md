@@ -1,1 +1,1 @@
-# sym-tomasulo
+# tomasulo-simulator
