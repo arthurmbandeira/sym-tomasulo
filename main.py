@@ -19,12 +19,16 @@ def main(argv):
             f = arg
 
     # input_ = []
+
     with open(f, 'r') as file:
         file = open(f, 'r')
-        # input_ = [line.strip() for line in file]
-        for line in file:
-            parse(line.replace(',', ' ').split())
+        ins_list = [parse(line.replace(',', ' ').split()) for line in file]
+        print ins_list
+        # for line in file:
+        #     p = parse(line.replace(',', ' ').split())
+        #     print p.opcode
     file.close()
+
 
     # print input_
 
