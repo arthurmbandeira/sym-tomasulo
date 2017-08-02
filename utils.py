@@ -1,4 +1,6 @@
+import sys
 from structs import *
+
 
 def parse(p):
     if len(p) == 4:
@@ -44,3 +46,7 @@ def parse(p):
             raise Exception('Invalid opcode {0}'.format(p[0]))
     else:
         raise Exception('Invalid input')
+
+
+def parse_register(r):
+    return int(r[1:])

@@ -2,8 +2,9 @@
 
 import sys
 import getopt
-
+from collections import deque
 from utils import *
+from tomasulo import *
 
 def main(argv):
     try:
@@ -20,14 +21,19 @@ def main(argv):
 
     # input_ = []
 
+    # ins_queue = deque()
+
     with open(f, 'r') as file:
         file = open(f, 'r')
         ins_list = [parse(line.replace(',', ' ').split()) for line in file]
-        print ins_list
+
         # for line in file:
-        #     p = parse(line.replace(',', ' ').split())
-        #     print p.opcode
+        #     ins_queue.append(parse(line.replace(',', ' ').split()))
     file.close()
+
+    # print(ins_queue)
+
+    Tomasulo(ins_list)
 
 
     # print input_

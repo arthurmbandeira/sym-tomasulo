@@ -1,3 +1,19 @@
+class ReservationStation:
+    """docstring for ReservationStation"""
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.op = ''
+        self.qj = 0
+        self.qk = 0
+        self.vj = 0
+        self.vk = 0
+        self.A = 0
+        self.busy = False
+        self.ins = None
+
+
 class Instruction(object):
     """docstring for Instruction"""
     def __init__(self, opcode, cycle_cost=0):
@@ -7,6 +23,9 @@ class Instruction(object):
 
     def reset(self):
         self.state = 0
+
+    def get_name(self):
+        return self.__class__.__name__
 
 
 class BinOp(Instruction):
@@ -43,4 +62,65 @@ class MemOp(Instruction):
         super(MemOp, self).__init__(opcode, cycle_cost)
         self.rd = rd
         self.rs = rs
-        self.imm = imm        
+        self.imm = imm
+
+
+class Register:
+    """docstring for Register"""
+    def __init__(self, size=8):
+        self.qi = [0 for i in range(size)]
+        self.val = [0.0 for i in range(size)]
+
+    def reset(self):
+        self.qi = [0 for i in range(len(self.qi))]
+        self.val = [0.0 for i in range(len(self.val))]
+
+
+class Memory:
+    """docstring for Memory"""
+    def __init__(self, size=1024):
+        self.data = [0.0 for i in range(size)]
+
+    def get_item(self, index):
+        return self.data[index]
+
+    def set_item(self, index, data_):
+        self.data[index] = data_
+
+    def reset(self):
+        self.data = [0.0 for i in range(len(self.data))]
+
+
+class AddUnit:
+    """docstring for Unit"""
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.rs_id = -1
+        self.end_time = 0
+        self.busy = False
+        self.result = 0.0
+
+
+class MultUnit:
+    """docstring for Unit"""
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.rs_id = -1
+        self.end_time = 0
+        self.busy = False
+        self.result = 0.0
+
+
+class MemUnit:
+    """docstring for Unit"""
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.rs_id = -1
+        self.end_time = 0
+        self.result = 0.0
