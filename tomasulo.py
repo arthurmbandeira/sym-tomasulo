@@ -22,10 +22,10 @@ class Tomasulo:
                        }
 
         self.mem_unit = MemUnit()
-        self.add_unit = AddUnit()
-        self.sub_unit = AddUnit()
-        self.mul_unit = MultUnit()
-        self.div_unit = MultUnit()
+        self.add_unit1 = AddUnit()
+        self.add_unit2 = AddUnit()
+        self.mul_unit1 = MultUnit()
+        self.mul_unit2 = MultUnit()
 
         self.mem_queue = []
 
@@ -94,18 +94,32 @@ class Tomasulo:
             )
 
     def print_units(self):
-        print("Add Unit: rs_id: {0}, result: {1}, busy: {2}, end_time: {3}".format(
-            self.add_unit.rs_id,
-            self.add_unit.result,
-            self.add_unit.busy,
-            self.add_unit.end_time
+        print("Add Unit 1: rs_id: {0}, result: {1}, busy: {2}, end_time: {3}".format(
+            self.add_unit1.rs_id,
+            self.add_unit1.result,
+            self.add_unit1.busy,
+            self.add_unit1.end_time
             )
         )
-        print("Mult Unit: rs_id: {0}, result: {1}, busy: {2}, end_time: {3}".format(
-            self.mul_unit.rs_id,
-            self.mul_unit.result,
-            self.mul_unit.busy,
-            self.mul_unit.end_time
+        print("Add Unit 2: rs_id: {0}, result: {1}, busy: {2}, end_time: {3}".format(
+            self.add_unit2.rs_id,
+            self.add_unit2.result,
+            self.add_unit2.busy,
+            self.add_unit2.end_time
+            )
+        )
+        print("Mult Unit 1: rs_id: {0}, result: {1}, busy: {2}, end_time: {3}".format(
+            self.mul_unit1.rs_id,
+            self.mul_unit1.result,
+            self.mul_unit1.busy,
+            self.mul_unit1.end_time
+            )
+        )
+        print("Mult Unit 2: rs_id: {0}, result: {1}, busy: {2}, end_time: {3}".format(
+            self.mul_unit2.rs_id,
+            self.mul_unit2.result,
+            self.mul_unit2.busy,
+            self.mul_unit2.end_time
             )
         )
 
@@ -142,13 +156,6 @@ class Tomasulo:
             return
 
         current_ins = self.ins_list[self.ins_current_id]
-        # print(current_ins.state)
-        # sys.exit()
-
-        # print(self.rs_map[current_ins.opcode][0], self.rs_map[current_ins.opcode][1])
-
-        # self.ins_current_id += 1
-
 
         for i in range(self.rs_map[current_ins.opcode][0], self.rs_map[current_ins.opcode][1]):
             if not self.rs_lst[i].busy:
@@ -192,96 +199,38 @@ class Tomasulo:
                     self.registers.qi[parse_register(current_ins.rd)] = i
 
                 self.rs_lst[i].ins = self.ins_list[self.ins_current_id]
-                print(self.rs_lst[i].ins)
                 self.ins_current_id += 1
                 break
 
+    def execute(self): 
+        # load/store
+        if len(self.mem_queue) > 0:
+            rs_index = self.mem_queue[0]
 
-        # # Adder
-        # for i in range(4):
-        #     if not self.rs_lst[i].busy:
-        #         current_ins.state = 1
+            current_ins = self.rs_lst[rs_index].ins
 
-        #         self.rs_lst[i].opcode = current_ins.opcode
-        #         self.rs_lst[i].busy = True
+            if current_ins.state < 2:
+                if self.rs_lst[rs_index].op == 'lw':
+                    self.mem_unit.result = self.memory.get_item(self.rs_lst[rs_index].A/4)
+                    current_ins.state = 2
 
-        #         # rs
-        #         if self.registers.qi[current_ins.rs] == 0:
-        #             self.rs_lst[i].qj = 0
-        #             self.rs_lst[i].vj = self.registers.val[current_ins.rs]
-        #         else:
-        #             self.rs_lst[i].qj = self.registers.qi[current_ins.rs]
+                    self.mem_unit.rs_id = rs_index
+                    self.mem_unit.end_time = self.clock_now + self.rs_lst[rs_index].cycles_cost
+                elif self.rs_lst[rs_index].op == 'sw':
+                    if self.rs_lst[rs_index].qj == 0:
+                        self.mem_unit.result = self.rs_lst[rs_index].vj
+                        current_ins.state = 2
 
-        #         # rt
-        #         if self.registers.qi[current_ins.rt] == 0:
-        #             self.rs_lst[i].qk = 0
-        #             self.rs_lst[i].vk = self.registers.val[current_ins.rt]
-        #         else:
-        #             self.rs_lst[i].qk = self.registers.qi[current_ins.rt]
+                        self.mem_unit.rs_id = rs_index
+                        self.mem_unit.end_time = self.clock_now + self.rs_lst[rs_index].cycles_cost
+            else:
+                pass
 
-        #         self.registers.qi[current_ins.rd] = i
+        # adder
+        if self.add_unit1.busy == False:
+            for i in range(self.rs_map['add'][0], self.rs_map['add'][1]):
 
-        #         self.rs_lst[i].ins = self.ins_list[self.ins_current_id]
-        #         self.ins_current_id += 1
-        #         break
 
-        # # Multiplier
-        # for i in range(4, 12):
-        #     if not self.rs_lst[i].busy:
-        #         current_ins.state = 1
-
-        #         self.rs_lst[i].opcode = current_ins.opcode
-        #         self.rs_lst[i].busy = True
-
-        #         # rs
-        #         if self.registers.qi[current_ins.rs] == 0:
-        #             self.rs_lst[i].qj = 0
-        #             self.rs_lst[i].vj = self.registers.val[current_ins.rs]
-        #         else:
-        #             self.rs_lst[i].qj = self.registers.qi[current_ins.rs]
-
-        #         # rt
-        #         if self.registers.qi[current_ins.rt] == 0:
-        #             self.rs_lst[i].qk = 0
-        #             self.rs_lst[i].vk = self.registers.val[current_ins.rt]
-        #         else:
-        #             self.rs_lst[i].qk = self.registers.qi[current_ins.rt]
-
-        #         self.registers.qi[current_ins.rd] = i
-
-        #         self.rs_lst[i].ins = self.ins_list[self.ins_current_id]
-        #         self.ins_current_id += 1
-        #         break
-
-        # # Memory
-        # for i in range(12, 20):
-        #     if not self.rs_lst[i].busy:
-        #         current_ins.state = 1
-
-        #         self.rs_lst[i].opcode = current_ins.opcode
-        #         self.rs_lst[i].busy = True
-
-        #         self.rs_lst[i].A = current_ins.rs
-
-        #         # load
-        #         if current_ins.opcode == 'lw':
-        #             self.registers.qi[current_ins.rd] = i
-        #         # store
-        #         else:
-        #             if self.registers.qi[current_ins.rd] == 0:
-        #                 self.rs_lst[i].qj = 0
-        #                 self.rs_lst[i].vj = self.registers.val[current_ins.rd]
-        #             else:
-        #                 self.rs_lst[i].qj = self.registers.qi[current_ins.rd]
-
-        #         self.mem_queue.append(i)
-
-        #         self.rs_lst[i].ins = self.ins_list[self.ins_current_id]
-        #         self.ins_current_id += 1
-        #         break
-
-    def execute(self):
-        pass
 
     def update(self):
         pass
