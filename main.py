@@ -25,13 +25,14 @@ def main(argv):
 
     with open(f, 'r') as file:
         file = open(f, 'r')
-        ins_list = [parse(line.replace(',', ' ').split()) for line in file]
+        ins_list = [parse(line.replace(',', ' ').split()) for line in file if line[0] != '#']
 
         # for line in file:
         #     ins_queue.append(parse(line.replace(',', ' ').split()))
     file.close()
 
-    # print(ins_queue)
+    # print(ins_list)
+    # sys.exit()
 
     Tomasulo(ins_list)
 

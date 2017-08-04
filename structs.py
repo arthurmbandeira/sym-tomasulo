@@ -69,17 +69,17 @@ class Register:
     """docstring for Register"""
     def __init__(self, size=8):
         self.qi = [0 for i in range(size)]
-        self.val = [0.0 for i in range(size)]
+        self.val = [0 for i in range(size)]
 
     def reset(self):
         self.qi = [0 for i in range(len(self.qi))]
-        self.val = [0.0 for i in range(len(self.val))]
+        self.val = [0 for i in range(len(self.val))]
 
 
 class Memory:
     """docstring for Memory"""
     def __init__(self, size=1024):
-        self.data = [0.0 for i in range(size)]
+        self.data = [2 for i in range(size)]
 
     def get_item(self, index):
         return self.data[index]
@@ -88,7 +88,7 @@ class Memory:
         self.data[index] = data_
 
     def reset(self):
-        self.data = [0.0 for i in range(len(self.data))]
+        self.data = [0 for i in range(len(self.data))]
 
 
 class AddUnit:
@@ -100,7 +100,7 @@ class AddUnit:
         self.rs_id = -1
         self.end_time = 0
         self.busy = False
-        self.result = 0.0
+        self.result = 0
 
 
 class MultUnit:
@@ -112,7 +112,7 @@ class MultUnit:
         self.rs_id = -1
         self.end_time = 0
         self.busy = False
-        self.result = 0.0
+        self.result = 0
 
 
 class MemUnit:
@@ -123,4 +123,4 @@ class MemUnit:
     def reset(self):
         self.rs_id = -1
         self.end_time = 0
-        self.result = 0.0
+        self.result = 0
