@@ -2,7 +2,6 @@
 
 import sys
 import getopt
-from collections import deque
 from utils import *
 from tomasulo import *
 
@@ -19,25 +18,15 @@ def main(argv):
         elif opt in ("-f", "--file"):
             f = arg
 
-    # input_ = []
-
-    # ins_queue = deque()
-
     with open(f, 'r') as file:
         file = open(f, 'r')
         ins_list = [parse(line.replace(',', ' ').split()) for line in file if line[0] != '#']
-
-        # for line in file:
-        #     ins_queue.append(parse(line.replace(',', ' ').split()))
     file.close()
 
-    # print(ins_list)
-    # sys.exit()
-
-    Tomasulo(ins_list)
-
-
-    # print input_
+    tom = Tomasulo(ins_list)
+    tom.write_memory(256, 4)
+    tom.write_memory(512, 3)
+    tom.run()
 
 if __name__ == "__main__":
     main(sys.argv[1:])

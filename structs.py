@@ -68,8 +68,8 @@ class MemOp(Instruction):
 class Register:
     """docstring for Register"""
     def __init__(self, size=8):
-        self.qi = [0 for i in range(size)]
-        self.val = [0 for i in range(size)]
+        self.qi = [0 for i in range(size+1)]
+        self.val = [0 for i in range(size+1)]
 
     def reset(self):
         self.qi = [0 for i in range(len(self.qi))]
@@ -79,7 +79,7 @@ class Register:
 class Memory:
     """docstring for Memory"""
     def __init__(self, size=1024):
-        self.data = [2 for i in range(size)]
+        self.data = [0 for i in range(size)]
 
     def get_item(self, index):
         return self.data[index]

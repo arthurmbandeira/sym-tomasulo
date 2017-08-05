@@ -32,8 +32,6 @@ class Tomasulo:
 
         self.clock_now = 0
 
-        self.run()
-
     def reset(self):
         for i in self.ins_list:
             i.reset()
@@ -45,10 +43,10 @@ class Tomasulo:
             r.reset()
 
         self.mem_unit.reset()
-        self.add_unit.reset()
-        self.sub_unit.reset()
-        self.mul_unit.reset()
-        self.div_unit.reset()
+        self.add_unit1.reset()
+        self.add_unit2.reset()
+        self.mul_unit1.reset()
+        self.mul_unit2.reset()
 
         self.mem_queue = []
 
@@ -56,10 +54,10 @@ class Tomasulo:
         self.clock_now = 0
 
     def write_memory(self, index, data):
-        self.memory.set_item(index/4, float(data))
+        self.memory.set_item(index, int(data))
 
     def read_memory(self, index):
-        return self.memory.get_item(index/4)
+        return self.memory.get_item(index)
 
     def print_state(self):
         print("(1) Emitted / (2) Executing / (3) Writed")
@@ -69,7 +67,7 @@ class Tomasulo:
                 print("{0} {1} {2}: {3}".format(ins.opcode, ins.rd, ins.rs, ins.state))
             elif ins.get_name() == 'BranchOp':
                 if ins.opcode in ['j']:
-                    print("{0} {1}: {3}".format(
+                    print("{0} {1}: {2}".format(
                         ins.opcode, ins.imm, ins.state)
                     )
                 else:
@@ -91,7 +89,7 @@ class Tomasulo:
         print
 
     def print_reg(self):
-        for r_id in range(self.reg_size):
+        for r_id in range(1, self.reg_size+1):
             print("Registers: Q[{0}]: {1}, Value[{2}]: {3}".format(r_id, 
                 self.registers.qi[r_id], 
                 r_id, 
@@ -161,6 +159,8 @@ class Tomasulo:
             self.print_state()
             print()
             self.print_units()
+            print()
+            self.print_reg()
             input('\nPress any key to continue...\n')
 
     def step(self):
@@ -222,28 +222,28 @@ class Tomasulo:
                             self.rs_list[i].qj = self.registers.qi[parse_register(current_ins.rs)]
                         self.registers.qi[parse_register(current_ins.rd)] = i
                     elif current_ins.opcode in ['blt', 'bgt', 'beq']:
+                        # return BranchOp(opcode=p[0], cycle_cost=5, rs=p[1], rt=p[2], imm=p[3])
                         solve_branch = True
-                        # rs
-                        if self.registers.qi[parse_register(current_ins.rs)] == 0:
-                            self.rs_list[i].qj = 0
-                            self.rs_list[i].vj = self.registers.val[parse_register(current_ins.rs)]
-                        else:
-                            self.rs_list[i].qj = self.registers.qi[parse_register(current_ins.rs)]
+                    #     # rs
+                    #     if self.registers.qi[parse_register(current_ins.rs)] == 0:
+                    #         self.rs_list[i].qj = 0
+                    #         self.rs_list[i].vj = self.registers.val[parse_register(current_ins.rs)]
+                    #     else:
+                    #         self.rs_list[i].qj = self.registers.qi[parse_register(current_ins.rs)]
 
-                        # rt
-                        if self.registers.qi[parse_register(current_ins.rt)] == 0:
-                            self.rs_list[i].qk = 0
-                            self.rs_list[i].vk = self.registers.val[parse_register(current_ins.rt)]
-                        else:
-                            self.rs_list[i].qk = self.registers.qi[parse_register(current_ins.rt)]
+                    #     # rt
+                    #     if self.registers.qi[parse_register(current_ins.rt)] == 0:
+                    #         self.rs_list[i].qk = 0
+                    #         self.rs_list[i].vk = self.registers.val[parse_register(current_ins.rt)]
+                    #     else:
+                    #         self.rs_list[i].qk = self.registers.qi[parse_register(current_ins.rt)]
 
                         # print(parse_register(current_ins.rd))
                         
                         # self.registers.qi[parse_register(current_ins.rd)] = i
-                    elif current_ins.opcode in ['j']:
-                        pass
-
-                        
+                    # elif current_ins.opcode in ['j']:
+                    #     solve_branch = True
+                    #     self.rs_list[i].vj = int(current_ins.imm)
 
                     else:
                         # rs
@@ -276,7 +276,7 @@ class Tomasulo:
 
             if current_ins.state < 2:
                 if self.rs_list[rs_index].op == 'lw':
-                    self.mem_unit.result = self.memory.get_item(int(self.rs_list[rs_index].A/4))
+                    self.mem_unit.result = self.memory.get_item(int(self.rs_list[rs_index].A))
                     current_ins.state = 2
 
                     self.mem_unit.rs_id = rs_index
@@ -297,11 +297,11 @@ class Tomasulo:
                 if self.rs_list[i].qj == 0 and self.rs_list[i].qk == 0 and self.rs_list[i].busy == True and self.rs_list[i].ins.state == 1:
                     if self.rs_list[i].ins.opcode == 'add':
                         self.add_unit1.result = self.rs_list[i].vj + self.rs_list[i].vk
-                        print('#'*10+' Generating a add result: {0} + {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.add_unit1.result))
+                        print('#'*10+' Generating an add result: {0} + {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.add_unit1.result))
                         print()
                     elif self.rs_list[i].ins.opcode == 'addi':
                         self.add_unit1.result = self.rs_list[i].vj + self.rs_list[i].vk
-                        print('#'*10+' Generating a addi result: {0} + {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.add_unit1.result))
+                        print('#'*10+' Generating an addi result: {0} + {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.add_unit1.result))
                         print()
                     elif self.rs_list[i].ins.opcode == 'sub':
                         self.add_unit1.result = self.rs_list[i].vj - self.rs_list[i].vk
@@ -323,25 +323,24 @@ class Tomasulo:
                         self.add_unit1.result = not self.rs_list[i].vj
                         print('#'*10+' Generating a not result: ~{0} = {1}'.format(self.rs_list[i].vj, self.add_unit1.result))
                         print()
-                    elif self.rs_list[i].ins.opcode == 'blt':
-                        if self.rs_list[i].vj < self.rs_list[i].vk:
-                            self.solve_branch = True
-                            self.program_counter = self.rs_list[i].ins.imm
-                            print('Branch '+str(self.rs_list[i].ins.opcode))
-                    elif self.rs_list[i].ins.opcode == 'bgt':
-                        if self.rs_list[i].vj > self.rs_list[i].vk:
-                            self.solve_branch = True
-                            self.program_counter = self.rs_list[i].ins.imm
-                            print('Branch '+str(self.rs_list[i].ins.opcode))
-                    elif self.rs_list[i].ins.opcode == 'beq':
-                        if self.rs_list[i].vj == self.rs_list[i].vk:
-                            self.solve_branch = True
-                            self.program_counter = self.rs_list[i].ins.imm
-                            print('Branch '+str(self.rs_list[i].ins.opcode))
-                    elif self.rs_list[i].ins.opcode == 'j':
-                        self.solve_branch = True
-                        self.program_counter = self.rs_list[i].ins.imm
-                        print('Branch '+str(self.rs_list[i].ins.opcode))
+                    # elif self.rs_list[i].ins.opcode == 'blt':
+                    #     if self.rs_list[i].vj < self.rs_list[i].vk:
+                    #         self.solve_branch = True
+                    #         self.program_counter = self.rs_list[i].ins.imm
+                    #         print('Branch '+str(self.rs_list[i].ins.opcode))
+                    # elif self.rs_list[i].ins.opcode == 'bgt':
+                    #     if self.rs_list[i].vj > self.rs_list[i].vk:
+                    #         self.solve_branch = True
+                    #         self.program_counter = self.rs_list[i].ins.imm
+                    #         print('Branch '+str(self.rs_list[i].ins.opcode))
+                    # elif self.rs_list[i].ins.opcode == 'beq':
+                    #     if self.rs_list[i].vj == self.rs_list[i].vk:
+                    #         self.solve_branch = True
+                    #         self.program_counter = self.rs_list[i].ins.imm
+                    #         print('Branch '+str(self.rs_list[i].ins.opcode))
+                    # elif self.rs_list[i].ins.opcode == 'j':
+                    #     self.program_counter = self.rs_list[i].vj
+                    #     print('Branch '+str(self.rs_list[i].ins.opcode))
 
                     self.rs_list[i].ins.state = 2
 
@@ -355,11 +354,11 @@ class Tomasulo:
                 if self.rs_list[i].qj == 0 and self.rs_list[i].qk == 0 and self.rs_list[i].busy == True and self.rs_list[i].ins.state == 1:
                     if self.rs_list[i].ins.opcode == 'add':
                         self.add_unit2.result = self.rs_list[i].vj + self.rs_list[i].vk
-                        print('#'*10+' Generating a add result: {0} + {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.add_unit2.result))
+                        print('#'*10+' Generating an add result: {0} + {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.add_unit2.result))
                         print()
                     elif self.rs_list[i].ins.opcode == 'addi':
                         self.add_unit2.result = self.rs_list[i].vj + self.rs_list[i].vk
-                        print('#'*10+' Generating a addi result: {0} + {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.add_unit2.result))
+                        print('#'*10+' Generating an addi result: {0} + {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.add_unit2.result))
                         print()
                     elif self.rs_list[i].ins.opcode == 'sub':
                         self.add_unit2.result = self.rs_list[i].vj - self.rs_list[i].vk
@@ -381,25 +380,25 @@ class Tomasulo:
                         self.add_unit2.result = not self.rs_list[i].vj
                         print('#'*10+' Generating a not result: ~{0} = {1}'.format(self.rs_list[i].vj, self.add_unit2.result))
                         print()
-                    elif self.rs_list[i].ins.opcode == 'blt':
-                        if self.rs_list[i].vj < self.rs_list[i].vk:
-                            self.solve_branch = True
-                            self.program_counter = self.rs_list[i].ins.imm
-                            print('Branch '+str(self.rs_list[i].ins.opcode))
-                    elif self.rs_list[i].ins.opcode == 'bgt':
-                        if self.rs_list[i].vj > self.rs_list[i].vk:
-                            self.solve_branch = True
-                            self.program_counter = self.rs_list[i].ins.imm
-                            print('Branch '+str(self.rs_list[i].ins.opcode))
-                    elif self.rs_list[i].ins.opcode == 'beq':
-                        if self.rs_list[i].vj == self.rs_list[i].vk:
-                            self.solve_branch = True
-                            self.program_counter = self.rs_list[i].ins.imm
-                            print('Branch '+str(self.rs_list[i].ins.opcode))
-                    elif self.rs_list[i].ins.opcode == 'j':
-                        self.solve_branch = True
-                        self.program_counter = self.rs_list[i].ins.imm
-                        print('Branch '+str(self.rs_list[i].ins.opcode))
+                    # elif self.rs_list[i].ins.opcode == 'blt':
+                    #     if self.rs_list[i].vj < self.rs_list[i].vk:
+                    #         self.solve_branch = True
+                    #         self.program_counter = self.rs_list[i].ins.imm
+                    #         print('Branch '+str(self.rs_list[i].ins.opcode))
+                    # elif self.rs_list[i].ins.opcode == 'bgt':
+                    #     if self.rs_list[i].vj > self.rs_list[i].vk:
+                    #         self.solve_branch = True
+                    #         self.program_counter = self.rs_list[i].ins.imm
+                    #         print('Branch '+str(self.rs_list[i].ins.opcode))
+                    # elif self.rs_list[i].ins.opcode == 'beq':
+                    #     if self.rs_list[i].vj == self.rs_list[i].vk:
+                    #         self.solve_branch = True
+                    #         self.program_counter = self.rs_list[i].ins.imm
+                    #         print('Branch '+str(self.rs_list[i].ins.opcode))
+                    # elif self.rs_list[i].ins.opcode == 'j':
+                    #     self.solve_branch = True
+                    #     self.program_counter = self.rs_list[i].vj
+                    #     print('Branch '+str(self.rs_list[i].ins.opcode))
 
                     self.rs_list[i].ins.state = 2
 
@@ -421,7 +420,7 @@ class Tomasulo:
                         print('Generating a mul result: {0} * {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.mul_unit1.result))
                     elif self.rs_list[i].ins.opcode == 'div':
                         if self.rs_list[i].vk != 0:
-                            self.mul_unit1.result = self.rs_list[i].vj / self.rs_list[i].vk
+                            self.mul_unit1.result = int(self.rs_list[i].vj / self.rs_list[i].vk)
                         else:
                             self.mul_unit1.result = 0
                         print('Generating a div result: {0} / {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.mul_unit1.result))
@@ -441,7 +440,7 @@ class Tomasulo:
                         print('Generating a mul result: {0} * {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.mul_unit2.result))
                     elif self.rs_list[i].ins.opcode == 'div':
                         if self.rs_list[i].vk != 0:
-                            self.mul_unit2.result = self.rs_list[i].vj / self.rs_list[i].vk
+                            self.mul_unit2.result = int(self.rs_list[i].vj / self.rs_list[i].vk)
                         else:
                             self.mul_unit2.result = 0
                         print('Generating a div result: {0} / {1} = {2}'.format(self.rs_list[i].vj, self.rs_list[i].vk, self.mul_unit2.result))
@@ -475,7 +474,7 @@ class Tomasulo:
                         self.rs_list[i].vk = self.mem_unit.result
 
             elif ins.opcode == 'sw':
-                self.memory.set_item(self.rs_list[rs_index].A/4, self.mem_unit.result)
+                self.memory.set_item(self.rs_list[rs_index].A, self.mem_unit.result)
 
             assert(rs_index == self.mem_unit.rs_id)
             self.rs_list[rs_index].ins.state = 3
@@ -487,78 +486,6 @@ class Tomasulo:
         self.update_unit(self.add_unit2)
         self.update_unit(self.mul_unit1)
         self.update_unit(self.mul_unit2)
-
-        # if self.add_unit1.end_time == self.clock_now:
-        #     for reg_id in range(self.reg_size):
-        #         if self.registers.qi[reg_id] == self.add_unit1.rs_id:
-        #             self.registers.qi[reg_id] = 0
-        #             self.registers.val[reg_id] = self.add_unit1.result
-
-        #     for i in range(self.rs_map['add'][0], self.rs_map['lw'][1]):
-        #         if self.rs_list[i].qj == self.add_unit1.rs_id:
-        #             self.rs_list[i].qj = 0
-        #             self.rs_list[i].vj = self.add_unit1.result
-        #         if self.rs_list[i].qk == self.add_unit1.rs_id:
-        #             self.rs_list[i].qk = 0
-        #             self.rs_list[i].vk = self.add_unit1.result
-
-        #     self.rs_list[self.add_unit1.rs_id].ins.state = 3
-        #     self.rs_list[self.add_unit1.rs_id].ins.busy = False
-        #     self.add_unit1.busy = False
-
-        # if self.add_unit2.end_time == self.clock_now:
-        #     for reg_id in range(self.reg_size):
-        #         if self.registers.qi[reg_id] == self.add_unit2.rs_id:
-        #             self.registers.qi[reg_id] = 0
-        #             self.registers.val[reg_id] = self.add_unit2.result
-
-        #     for i in range(self.rs_map['add'][0], self.rs_map['lw'][1]):
-        #         if self.rs_list[i].qj == self.add_unit2.rs_id:
-        #             self.rs_list[i].qj = 0
-        #             self.rs_list[i].vj = self.add_unit2.result
-        #         if self.rs_list[i].qk == self.add_unit2.rs_id:
-        #             self.rs_list[i].qk = 0
-        #             self.rs_list[i].vk = self.add_unit2.result
-
-        #     self.rs_list[self.add_unit2.rs_id].ins.state = 3
-        #     self.rs_list[self.add_unit2.rs_id].ins.busy = False
-        #     self.add_unit2.busy = False
-
-        # if self.mul_unit1.end_time == self.clock_now:
-        #     for reg_id in range(self.reg_size):
-        #         if self.registers.qi[reg_id] == self.mul_unit1.rs_id:
-        #             self.registers.qi[reg_id] = 0
-        #             self.registers.val[reg_id] = self.mul_unit1.result
-
-        #     for i in range(self.rs_map['add'][0], self.rs_map['lw'][1]):
-        #         if self.rs_list[i].qj == self.mul_unit1.rs_id:
-        #             self.rs_list[i].qj = 0
-        #             self.rs_list[i].vj = self.mul_unit1.result
-        #         if self.rs_list[i].qk == self.mul_unit1.rs_id:
-        #             self.rs_list[i].qk = 0
-        #             self.rs_list[i].vk = self.mul_unit1.result
-
-        #     self.rs_list[self.mul_unit1.rs_id].ins.state = 3
-        #     self.rs_list[self.mul_unit1.rs_id].ins.busy = False
-        #     self.mul_unit1.busy = False
-
-        # if self.mul_unit2.end_time == self.clock_now:
-        #     for reg_id in range(self.reg_size):
-        #         if self.registers.qi[reg_id] == self.mul_unit2.rs_id:
-        #             self.registers.qi[reg_id] = 0
-        #             self.registers.val[reg_id] = self.mul_unit2.result
-
-        #     for i in range(self.rs_map['add'][0], self.rs_map['lw'][1]):
-        #         if self.rs_list[i].qj == self.mul_unit2.rs_id:
-        #             self.rs_list[i].qj = 0
-        #             self.rs_list[i].vj = self.mul_unit2.result
-        #         if self.rs_list[i].qk == self.mul_unit2.rs_id:
-        #             self.rs_list[i].qk = 0
-        #             self.rs_list[i].vk = self.mul_unit2.result
-
-        #     self.rs_list[self.mul_unit2.rs_id].ins.state = 3
-        #     self.rs_list[self.mul_unit2.rs_id].ins.busy = False
-        #     self.mul_unit2.busy = False
 
     def update_unit(self, unit):
         if unit.end_time == self.clock_now:
@@ -574,6 +501,7 @@ class Tomasulo:
                 if self.rs_list[i].qk == unit.rs_id:
                     self.rs_list[i].qk = 0
                     self.rs_list[i].vk = unit.result
+
 
             self.rs_list[unit.rs_id].ins.state = 3
             self.rs_list[unit.rs_id].ins.busy = False
