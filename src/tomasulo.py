@@ -2,6 +2,8 @@ import sys
 from structs import *
 from utils import *
 
+if sys.version_info[0] < 3: input = raw_input
+
 class Tomasulo:
     """docstring for Tomasulo"""
     def __init__(self, ins_list):
@@ -14,12 +16,12 @@ class Tomasulo:
         self.registers = Register(size=self.reg_size)
         self.memory = Memory(size=self.mem_size)
 
-        self.rs_list = [ReservationStation() for i in range(20)]
-        self.rs_map = {'add': (0, 4), 'addi': (0, 4), 'sub': (0, 4), 'subi': (0, 4),
-                       'and': (0, 4), 'or': (0, 4), 'not': (0, 4),
-                       'blt': (0, 4), 'bgt': (0, 4), 'beq': (0, 4), 'j': (0, 4),
-                       'mul': (4, 12), 'div': (4, 12),
-                       'lw': (12, 20), 'sw': (12, 20)
+        self.rs_list = [ReservationStation() for i in range(21)] # 21 created but rs_list[0] is ignored
+        self.rs_map = {'add': (1, 5), 'addi': (1, 5), 'sub': (1, 5), 'subi': (1, 5),
+                       'and': (1, 5), 'or': (1, 5), 'not': (1, 5),
+                       'blt': (1, 5), 'bgt': (1, 5), 'beq': (1, 5), 'j': (1, 5),
+                       'mul': (5, 13), 'div': (5, 13),
+                       'lw': (13, 21), 'sw': (13, 21)
                        }
 
         self.mem_unit = MemUnit()
@@ -98,7 +100,8 @@ class Tomasulo:
 
     def print_rs(self):
         for r_id in range(len(self.rs_list)):
-            if r_id in [4, 12]: print()
+            if r_id == 0: pass
+            if r_id in [5, 13]: print()
             print("RS #{0}, Op: {1}, Qj: {2}, Qk: {3}, Vj: {4}, Vk: {5}, busy: {6}, A: {7}".format(
                 r_id, 
                 self.rs_list[r_id].op, 
@@ -221,29 +224,8 @@ class Tomasulo:
                         else:
                             self.rs_list[i].qj = self.registers.qi[parse_register(current_ins.rs)]
                         self.registers.qi[parse_register(current_ins.rd)] = i
-                    elif current_ins.opcode in ['blt', 'bgt', 'beq']:
-                        # return BranchOp(opcode=p[0], cycle_cost=5, rs=p[1], rt=p[2], imm=p[3])
-                        solve_branch = True
-                    #     # rs
-                    #     if self.registers.qi[parse_register(current_ins.rs)] == 0:
-                    #         self.rs_list[i].qj = 0
-                    #         self.rs_list[i].vj = self.registers.val[parse_register(current_ins.rs)]
-                    #     else:
-                    #         self.rs_list[i].qj = self.registers.qi[parse_register(current_ins.rs)]
-
-                    #     # rt
-                    #     if self.registers.qi[parse_register(current_ins.rt)] == 0:
-                    #         self.rs_list[i].qk = 0
-                    #         self.rs_list[i].vk = self.registers.val[parse_register(current_ins.rt)]
-                    #     else:
-                    #         self.rs_list[i].qk = self.registers.qi[parse_register(current_ins.rt)]
-
-                        # print(parse_register(current_ins.rd))
-                        
-                        # self.registers.qi[parse_register(current_ins.rd)] = i
-                    # elif current_ins.opcode in ['j']:
-                    #     solve_branch = True
-                    #     self.rs_list[i].vj = int(current_ins.imm)
+                    # elif current_ins.opcode in ['blt', 'bgt', 'beq']:
+                        # solve_branch = True
 
                     else:
                         # rs
@@ -260,7 +242,6 @@ class Tomasulo:
                         else:
                             self.rs_list[i].qk = self.registers.qi[parse_register(current_ins.rt)]
 
-                        # print(parse_register(current_ins.rd))
                         self.registers.qi[parse_register(current_ins.rd)] = i
 
                     self.rs_list[i].ins = self.ins_list[self.program_counter]
@@ -291,7 +272,6 @@ class Tomasulo:
             else:
                 pass
 
-        # adder
         if self.add_unit1.busy == False:
             for i in range(self.rs_map['add'][0], self.rs_map['add'][1]):
                 if self.rs_list[i].qj == 0 and self.rs_list[i].qk == 0 and self.rs_list[i].busy == True and self.rs_list[i].ins.state == 1:
@@ -410,8 +390,6 @@ class Tomasulo:
         else:
             pass
 
-
-        # multiplier
         if self.mul_unit1.busy == False:
             for i in range(self.rs_map['mul'][0], self.rs_map['mul'][1]):
                 if self.rs_list[i].qj == 0 and self.rs_list[i].qk == 0 and self.rs_list[i].busy == True and self.rs_list[i].ins.state == 1:

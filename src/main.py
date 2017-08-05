@@ -24,8 +24,15 @@ def main(argv):
     file.close()
 
     tom = Tomasulo(ins_list)
-    tom.write_memory(256, 4)
-    tom.write_memory(512, 3)
+
+    # # Test basic operations: +, -, *, /
+    # tom.write_memory(256, 6)
+    # tom.write_memory(512, 3)
+
+    # # Test logic operations: and, or, not
+    # tom.write_memory(256, 0)
+    # tom.write_memory(512, 1)
+    
     tom.run()
 
 if __name__ == "__main__":
